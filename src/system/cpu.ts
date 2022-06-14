@@ -1,4 +1,4 @@
-import { MASK, PC_INIT, STACK_BASE } from "../const";
+import { MASK, RESET_VECTOR, STACK_BASE } from "../const";
 import Controller from "../controller";
 import EventBus from "../EventBus";
 import { decode } from "./instructions";
@@ -7,6 +7,7 @@ import { Mapper } from "./mapper";
 export default class CPU {
   delay = 0;
   breakpoints = new Set<number>();
+  nmi = false;
 
   constructor(
     public memory: Mapper,
@@ -14,14 +15,16 @@ export default class CPU {
     private controller: Controller,
     private bus: EventBus
   ) {
-    const low = this.memory.read(PC_INIT[0]);
-    const high = this.memory.read(PC_INIT[1]);
+    this.pc = this.memory.read16(RESET_VECTOR);
 
-    this.pc = low | (high << 8);
     this.sp = 0xfd;
 
     this.bus.on("breakpoint", (address: number) => {
       this.breakpoints.add(address);
+    });
+
+    this.bus.on("nmi", () => {
+      this.nmi = true;
     });
   }
 
@@ -166,11 +169,6 @@ export default class CPU {
   }
 
   cycle() {
-    if (this.delay > 0) {
-      this.delay--;
-      return;
-    }
-
     if (this.breakpoints.has(this.pc) && !this.controller.sbgContinue) {
       this.controller.pause();
       return;
@@ -178,6 +176,19 @@ export default class CPU {
 
     if (this.controller.sbgContinue) {
       this.controller.sbgContinue = false;
+    }
+
+    if (this.delay > 0) {
+      this.delay--;
+      return;
+    }
+
+    if (this.nmi) {
+      this.nmi = false;
+      this.push(this.pc >> 8);
+      this.push(this.pc & 0xff);
+      this.p |= MASK.b;
+      this.pc = this.memory.read16(0xfffa);
     }
 
     const opcode = this.memory.read(this.pc);

@@ -12,12 +12,13 @@ interface StartData {
   ppuRam: SharedArrayBuffer;
   cpuRegisters: SharedArrayBuffer;
   controlRegisters: SharedArrayBuffer;
+  framebuffer: SharedArrayBuffer;
   debug: boolean;
 }
 
 bus.on<StartData>(
   "start",
-  ({ controlRegisters, cpuRam, cpuRegisters, ppuRam, debug }) => {
+  ({ controlRegisters, cpuRam, cpuRegisters, ppuRam, framebuffer, debug }) => {
     const controller = new Controller(new Uint8Array(controlRegisters), bus);
 
     const clock = new Clock(controller);
@@ -28,7 +29,11 @@ bus.on<StartData>(
       }
     });
 
-    const ppu = new PPU(ppuRam, bus);
+    const ppu = new PPU(
+      new Uint8Array(ppuRam),
+      bus,
+      new Uint32Array(framebuffer)
+    );
 
     const mapper = new Mapper0(new Uint8Array(cpuRam), ppu, bus);
 

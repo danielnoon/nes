@@ -28,6 +28,12 @@ export const STA = {
       cpu.pc += 3;
       cpu.delay = 5;
     },
+    [Mode.AbsoluteY](cpu: CPU) {
+      const args = cpu.args(2);
+      cpu.memory.write(to16bit(args[0], args[1]) + cpu.y, cpu.a);
+      cpu.pc += 3;
+      cpu.delay = 5;
+    },
     [Mode.IndirectIndexed](cpu: CPU) {
       const args = cpu.args(1);
       const addr = to16bit(

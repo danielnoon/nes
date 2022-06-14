@@ -110,3 +110,19 @@ export const CPX = {
     },
   },
 };
+
+export const CPY = {
+  name: "CPY",
+  methods: {
+    [Mode.Immediate](cpu: CPU) {
+      const args = cpu.args(1);
+      const value = args[0];
+      const result = cpu.y - value;
+      cpu.pc += 2;
+      cpu.delay = 2;
+      cpu.z = result === 0;
+      cpu.n = (result & 0x80) !== 0;
+      cpu.c = cpu.y >= value;
+    },
+  },
+};

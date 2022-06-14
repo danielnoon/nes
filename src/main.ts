@@ -1,3 +1,4 @@
+import { Flag } from "./flag";
 import Manager from "./manager";
 import { parse } from "./parse";
 import "./style.css";
@@ -12,6 +13,7 @@ const stepper = document.querySelector<HTMLButtonElement>("#step")!;
 const continuer = document.querySelector<HTMLButtonElement>("#continue")!;
 const brkInput = document.querySelector<HTMLButtonElement>("#brkInput")!;
 const brkSubmit = document.querySelector<HTMLButtonElement>("#brkSubmit")!;
+const screen = document.querySelector<HTMLCanvasElement>("#screen")!;
 
 romPicker.addEventListener("change", async () => {
   const romData = parse(await romPicker.files![0].arrayBuffer());
@@ -27,6 +29,7 @@ romPicker.addEventListener("change", async () => {
     debug,
     stepper,
     continuer,
+    screen,
   });
 
   brkSubmit.addEventListener("click", () => {
@@ -34,5 +37,15 @@ romPicker.addEventListener("change", async () => {
     manager.addBreakpoint(brk);
   });
 
+  stepper.addEventListener("click", () => {
+    manager.step();
+  });
+
+  continuer.addEventListener("click", () => {
+    manager.continue();
+  });
+
   manager.start(romData.unwrap());
 });
+
+console.log(Flag);

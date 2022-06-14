@@ -6,7 +6,7 @@ import { BCC, BCS, BEQ, BMI, BNE, BPL } from "./impl/branch";
 import { CLC, CLD, SEI } from "./impl/flag-control";
 import { DEX, DEY, INC, INX, INY } from "./impl/increment";
 import { LDX, LDA, LDY } from "./impl/load";
-import { AND, CMP, CPX, EOR, ORA } from "./impl/logic";
+import { AND, CMP, CPX, CPY, EOR, ORA } from "./impl/logic";
 import { PHA, PHP, PLA, PLP } from "./impl/stack";
 import { STY, STA, STX } from "./impl/store";
 import { TAX, TAY, TSX, TXA, TXS, TYA } from "./impl/transfer";
@@ -94,6 +94,7 @@ const RTI = {
 const opcodeMatrix: Record<number, AddressingMethod> = {
   0x06: ASL.methods[Mode.ZeroPage],
   0x08: PHP.methods[Mode.Implied],
+  0x09: ORA.methods[Mode.Immediate],
   0x0d: ORA.methods[Mode.Absolute],
   0x10: BPL.methods[Mode.Relative],
   0x18: CLC.methods[Mode.Implied],
@@ -131,12 +132,14 @@ const opcodeMatrix: Record<number, AddressingMethod> = {
   0x91: STA.methods[Mode.IndirectIndexed],
   0x95: STA.methods[Mode.ZeroPageX],
   0x98: TYA.methods[Mode.Implied],
+  0x99: STA.methods[Mode.AbsoluteY],
   0x9a: TXS.methods[Mode.Implied],
   0x9d: STA.methods[Mode.AbsoluteX],
   0xa6: LDX.methods[Mode.ZeroPage],
   0xa8: TAY.methods[Mode.Implied],
   0xa9: LDA.methods[Mode.Immediate],
   0xac: LDY.methods[Mode.Absolute],
+  0xad: LDA.methods[Mode.Absolute],
   0xa0: LDY.methods[Mode.Immediate],
   0xa2: LDX.methods[Mode.Immediate],
   0xa5: LDA.methods[Mode.ZeroPage],
@@ -145,6 +148,7 @@ const opcodeMatrix: Record<number, AddressingMethod> = {
   0xb1: LDA.methods[Mode.IndirectIndexed],
   0xba: TSX.methods[Mode.Implied],
   0xbd: LDA.methods[Mode.AbsoluteX],
+  0xc0: CPY.methods[Mode.Immediate],
   0xc8: INY.methods[Mode.Implied],
   0xc9: CMP.methods[Mode.Immediate],
   0xca: DEX.methods[Mode.Implied],
@@ -153,6 +157,7 @@ const opcodeMatrix: Record<number, AddressingMethod> = {
   0xe0: CPX.methods[Mode.Immediate],
   0xe6: INC.methods[Mode.ZeroPage],
   0xe8: INX.methods[Mode.Implied],
+  0xee: INC.methods[Mode.Absolute],
   0xf0: BEQ.methods[Mode.Relative],
 };
 

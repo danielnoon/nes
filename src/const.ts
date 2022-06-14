@@ -1,8 +1,14 @@
 export const PRG_BANK_SIZE = 16384;
 export const CHR_BANK_SIZE = 8192;
 export const ROM_START_ADDRESS = 0x8000;
-export const PC_INIT = [0xfffc, 0xfffd] as const;
+export const NMI_VECTOR = 0xfffa;
+export const RESET_VECTOR = 0xfffc;
+export const IRQ_VECTOR = 0xfffe;
 export const STACK_BASE = 0x0100;
+export const OAM_BASE = 0x4000;
+export const OAM_SIZE = 0x00ff;
+export const SECONDARY_OAM_BASE = 0x4100;
+export const SECONDARY_OAM_SIZE = 0x0020;
 
 export const MASK = {
   n: 0b10000000,

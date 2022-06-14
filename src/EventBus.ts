@@ -9,6 +9,7 @@ export default class EventBus {
   constructor(private messageable: Messageable) {
     this.messageable.onmessage = (e: MessageEvent) => {
       const { event, data } = e.data;
+
       this.eventMap.get(event)?.forEach((callback) => callback(data));
     };
   }
@@ -17,6 +18,7 @@ export default class EventBus {
     if (!this.eventMap.has(event)) {
       this.eventMap.set(event, []);
     }
+
     this.eventMap.get(event)?.push(callback);
   }
 
@@ -24,15 +26,19 @@ export default class EventBus {
     if (!this.eventMap.has(event)) {
       return;
     }
+
     const callbacks = this.eventMap.get(event);
     const index = callbacks?.indexOf(callback);
+
     if (index === undefined) {
       return;
     }
+
     callbacks?.splice(index, 1);
   }
 
   send(event: string, data: any): void {
     this.messageable.postMessage({ event, data });
+    this.eventMap.get(event)?.forEach((callback) => callback(data));
   }
 }
