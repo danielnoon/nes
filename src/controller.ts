@@ -1,6 +1,9 @@
 import EventBus from "./EventBus";
 
 export default class Controller {
+  private currentController1 = 0;
+  private currentController2 = 0;
+
   constructor(private control: Uint8Array, private bus: EventBus) {}
 
   get running() {
@@ -27,15 +30,32 @@ export default class Controller {
     Atomics.store(this.control, 2, value ? 1 : 0);
   }
 
+  pollControllers() {
+    this.currentController1 = Atomics.load(this.control, 4);
+    this.currentController2 = Atomics.load(this.control, 5);
+  }
+
+  getController1() {
+    const value = this.currentController1 & 1;
+    this.currentController1 >>= 1;
+    return value;
+  }
+
+  getController2() {
+    const value = this.currentController2 & 1;
+    this.currentController2 >>= 1;
+    return value;
+  }
+
   pause() {
     this.paused = true;
     this.running = false;
-    this.bus.send("pause", {});
+    this.bus.send("pause");
   }
 
   resume() {
     this.paused = false;
     this.running = true;
-    this.bus.send("resume", {});
+    this.bus.send("resume");
   }
 }

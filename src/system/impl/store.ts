@@ -12,13 +12,13 @@ export const STA = {
     },
     [Mode.ZeroPage](cpu: CPU) {
       const args = cpu.args(1);
-      cpu.memory.write(args[0], cpu.a);
+      cpu.memory.write(args[0], cpu.a, true);
       cpu.pc += 2;
       cpu.delay = 3;
     },
     [Mode.ZeroPageX](cpu: CPU) {
       const args = cpu.args(1);
-      cpu.memory.write(args[0] + cpu.x, cpu.a);
+      cpu.memory.write(args[0] + cpu.x, cpu.a, true);
       cpu.pc += 2;
       cpu.delay = 4;
     },
@@ -36,13 +36,17 @@ export const STA = {
     },
     [Mode.IndirectIndexed](cpu: CPU) {
       const args = cpu.args(1);
-      const addr = to16bit(
-        cpu.memory.read(args[0]),
-        cpu.memory.read(args[0] + 1)
-      );
+      const addr = cpu.memory.read16(args[0]);
       cpu.memory.write(addr + cpu.y, cpu.a);
       cpu.pc += 2;
       cpu.delay = 6;
+    },
+    [Mode.IndexedIndirect](cpu: CPU) {
+      const args = cpu.args(1);
+      const addr = cpu.memory.read16(args[0] + cpu.x, true);
+      cpu.memory.write(addr, cpu.a);
+      cpu.pc += 2;
+      cpu.delay = 5;
     },
   },
 };
@@ -52,9 +56,15 @@ export const STX = {
   methods: {
     [Mode.ZeroPage](cpu: CPU) {
       const args = cpu.args(1);
-      cpu.memory.write(args[0], cpu.x);
+      cpu.memory.write(args[0], cpu.x, true);
       cpu.pc += 2;
       cpu.delay = 3;
+    },
+    [Mode.ZeroPageY](cpu: CPU) {
+      const args = cpu.args(1);
+      cpu.memory.write(args[0] + cpu.y, cpu.x, true);
+      cpu.pc += 2;
+      cpu.delay = 4;
     },
     [Mode.Absolute](cpu: CPU) {
       const args = cpu.args(2);
@@ -70,9 +80,15 @@ export const STY = {
   methods: {
     [Mode.ZeroPage](cpu: CPU) {
       const args = cpu.args(1);
-      cpu.memory.write(args[0], cpu.y);
+      cpu.memory.write(args[0], cpu.y, true);
       cpu.pc += 2;
       cpu.delay = 3;
+    },
+    [Mode.ZeroPageX](cpu: CPU) {
+      const args = cpu.args(1);
+      cpu.memory.write(args[0] + cpu.x, cpu.y, true);
+      cpu.pc += 2;
+      cpu.delay = 4;
     },
     [Mode.Absolute](cpu: CPU) {
       const args = cpu.args(2);

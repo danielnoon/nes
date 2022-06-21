@@ -1,7 +1,8 @@
 import { range } from "itertools";
 import { OAM_SIZE, SECONDARY_OAM_SIZE, STACK_BASE } from "./const";
 import EventBus from "./EventBus";
-import { ROM } from "./parse";
+import { Cartridge } from "./parse";
+import { Register } from "./Register";
 import { Renderer } from "./renderer";
 import { copyChrBanks, copyPrgBanks, printFlags } from "./util";
 
@@ -20,7 +21,23 @@ interface Controls {
 // 0x00: running
 // 0x01: pause
 // 0x02: interrupt (irq, nmi)
+// 0x03: reset
+// 0x04: controller 1
+// 0x05: controller 2
 //---------
+
+const controller = () =>
+  new Register(
+    8,
+    ["a", 1],
+    ["b", 1],
+    ["select", 1],
+    ["start", 1],
+    ["up", 1],
+    ["down", 1],
+    ["left", 1],
+    ["right", 1]
+  );
 
 export default class Manager {
   cpuRamRaw = new SharedArrayBuffer(0x10000);
@@ -34,6 +51,9 @@ export default class Manager {
   control = new Uint8Array(this.controlRegistersRaw);
   cpuRegisters = new Uint16Array(this.cpuRegistersRaw);
   framebuffer = new Uint32Array(this.framebufferRaw);
+
+  controller1 = controller();
+  controller2 = controller();
 
   worker: Worker;
   bus: EventBus;
@@ -57,10 +77,15 @@ export default class Manager {
 
     this.bus.on("frame", () => {
       this.renderer.render();
+
+      this.pause();
+
+      requestAnimationFrame(() => {
+        this.continue();
+      });
     });
 
     this.bus.on<{}>("pause", () => {
-      console.log("paused");
       this.controls.debugView.innerHTML = `
         <pre><code>
         PC: ${this.cpuRegisters[0].toString(16)}
@@ -80,7 +105,9 @@ export default class Manager {
     });
   }
 
-  async start(romData: ROM) {
+  async start(romData: Cartridge) {
+    console.log(romData);
+
     this.controls.pause.addEventListener("click", this.pause);
     console.log("starting rom");
     console.log("copying rom data");
@@ -101,6 +128,7 @@ export default class Manager {
 
     console.log(this.cpu);
     console.log(this.ppu);
+    console.log(this);
   }
 
   pause = () => {
@@ -117,6 +145,16 @@ export default class Manager {
 
   addBreakpoint(address: number) {
     this.bus.send("breakpoint", address);
+  }
+
+  setController1(key: string, value: number) {
+    this.controller1.set(key, value);
+    Atomics.store(this.control, 4, this.controller1.bits);
+  }
+
+  setController2(key: string, value: number) {
+    this.controller2.set(key, value);
+    Atomics.store(this.control, 5, this.controller2.bits);
   }
 
   dispose() {

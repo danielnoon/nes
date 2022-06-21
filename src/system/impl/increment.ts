@@ -58,8 +58,8 @@ export const INC = {
   methods: {
     [Mode.ZeroPage](cpu: CPU) {
       const args = cpu.args(1);
-      const value = (cpu.memory.read(args[0]) + 1) & 0xff;
-      cpu.memory.write(args[0], value);
+      const value = (cpu.memory.read(args[0], true) + 1) & 0xff;
+      cpu.memory.write(args[0], value, true);
       cpu.pc += 2;
       cpu.delay = 5;
       cpu.z = value === 0;
@@ -67,8 +67,8 @@ export const INC = {
     },
     [Mode.ZeroPageX](cpu: CPU) {
       const args = cpu.args(1);
-      const value = (cpu.memory.read(args[0] + cpu.x) + 1) & 0xff;
-      cpu.memory.write(args[0] + cpu.x, value);
+      const value = (cpu.memory.read(args[0] + cpu.x, true) + 1) & 0xff;
+      cpu.memory.write(args[0] + cpu.x, value, true);
       cpu.pc += 2;
       cpu.delay = 6;
       cpu.z = value === 0;
@@ -88,6 +88,50 @@ export const INC = {
       const args = cpu.args(2);
       const addr = to16bit(args[0], args[1]);
       const value = (cpu.memory.read(addr) + 1) & 0xff;
+      cpu.memory.write(addr + cpu.x, value);
+      cpu.pc += 3;
+      cpu.delay = 7;
+      cpu.z = value === 0;
+      cpu.n = (value & 0x80) !== 0;
+    },
+  },
+};
+
+export const DEC = {
+  name: "DEC",
+  methods: {
+    [Mode.ZeroPage](cpu: CPU) {
+      const args = cpu.args(1);
+      const value = (cpu.memory.read(args[0], true) - 1) & 0xff;
+      cpu.memory.write(args[0], value, true);
+      cpu.pc += 2;
+      cpu.delay = 5;
+      cpu.z = value === 0;
+      cpu.n = (value & 0x80) !== 0;
+    },
+    [Mode.ZeroPageX](cpu: CPU) {
+      const args = cpu.args(1);
+      const value = (cpu.memory.read(args[0] + cpu.x, true) - 1) & 0xff;
+      cpu.memory.write(args[0] + cpu.x, value, true);
+      cpu.pc += 2;
+      cpu.delay = 6;
+      cpu.z = value === 0;
+      cpu.n = (value & 0x80) !== 0;
+    },
+    [Mode.Absolute](cpu: CPU) {
+      const args = cpu.args(2);
+      const addr = to16bit(args[0], args[1]);
+      const value = (cpu.memory.read(addr) - 1) & 0xff;
+      cpu.memory.write(addr, value);
+      cpu.pc += 3;
+      cpu.delay = 6;
+      cpu.z = value === 0;
+      cpu.n = (value & 0x80) !== 0;
+    },
+    [Mode.AbsoluteX](cpu: CPU) {
+      const args = cpu.args(2);
+      const addr = to16bit(args[0], args[1]) + cpu.x;
+      const value = (cpu.memory.read(addr) - 1) & 0xff;
       cpu.memory.write(addr + cpu.x, value);
       cpu.pc += 3;
       cpu.delay = 7;

@@ -35,7 +35,7 @@ bus.on<StartData>(
       new Uint32Array(framebuffer)
     );
 
-    const mapper = new Mapper0(new Uint8Array(cpuRam), ppu, bus);
+    const mapper = new Mapper0(new Uint8Array(cpuRam), ppu, bus, controller);
 
     const cpu = new CPU(mapper, new Uint16Array(cpuRegisters), controller, bus);
 
@@ -49,12 +49,14 @@ bus.on<StartData>(
     bus.on("step", () => {
       controller.sbgContinue = true;
       clock.step();
-      bus.send("pause", {});
+      bus.send("pause");
     });
 
     bus.on("continue", () => {
       controller.sbgContinue = true;
       clock.start();
     });
+
+    console.log(ppu);
   }
 );

@@ -8,6 +8,7 @@ export default class CPU {
   delay = 0;
   breakpoints = new Set<number>();
   nmi = false;
+  history = [] as number[];
 
   constructor(
     public memory: Mapper,
@@ -187,9 +188,12 @@ export default class CPU {
       this.nmi = false;
       this.push(this.pc >> 8);
       this.push(this.pc & 0xff);
+      this.push(this.p | MASK.b);
       this.p |= MASK.b;
       this.pc = this.memory.read16(0xfffa);
     }
+
+    this.history.push(this.pc);
 
     const opcode = this.memory.read(this.pc);
 
@@ -197,6 +201,12 @@ export default class CPU {
 
     if (execute === null) {
       console.error(`Unknown opcode: ${opcode.toString(16)}`);
+      console.log(
+        this.history
+          .slice(-20)
+          .reverse()
+          .map((x) => x.toString(16).padStart(4, "0"))
+      );
       this.controller.pause();
       return;
     }

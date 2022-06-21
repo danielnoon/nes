@@ -2,23 +2,26 @@ import { CHR_BANK_SIZE, PRG_BANK_SIZE } from "./const";
 import { None, Option, Some } from "./types/option";
 import { Result, Ok, Err } from "./types/result";
 
-export interface ROM {
+enum Mirroring {
+  Horizontal,
+  Vertical,
+}
+
+export interface Cartridge {
   title: Option<string>;
   trainer: ArrayBuffer;
   prg_banks: ArrayBuffer[];
   chr_banks: ArrayBuffer[];
+  mirroring: Mirroring;
+  mapper: number;
 }
 
 interface ParseError {
   message: string;
 }
 
-export function parse(rom: ArrayBuffer): Result<ROM, ParseError> {
+export function parse(rom: ArrayBuffer): Result<Cartridge, ParseError> {
   const view = new Uint8Array(rom);
-
-  const trainerPresent = !!(view[6] & 0x06);
-
-  console.log(`Trainer present: ${trainerPresent}`);
 
   if (
     view[0] !== 0x4e ||
@@ -30,6 +33,10 @@ export function parse(rom: ArrayBuffer): Result<ROM, ParseError> {
       message: "Invalid header",
     });
   }
+
+  const trainerPresent = !!(view[6] & 0x06);
+  const mirroring = view[6] & 0x01 ? Mirroring.Vertical : Mirroring.Horizontal;
+  const mapper = (view[7] >> 4) | (view[6] & 0x0f);
 
   const n_prg_banks = view[4];
   const n_chr_banks = view[5];
@@ -63,5 +70,7 @@ export function parse(rom: ArrayBuffer): Result<ROM, ParseError> {
     trainer: trainerPresent ? rom.slice(16, 528) : new ArrayBuffer(0),
     prg_banks,
     chr_banks,
+    mirroring,
+    mapper,
   });
 }

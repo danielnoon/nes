@@ -22,7 +22,7 @@ export const LDA = {
     },
     [Mode.ZeroPage](cpu: CPU) {
       const args = cpu.args(1);
-      cpu.a = cpu.memory.read(args[0]);
+      cpu.a = cpu.memory.read(args[0], true);
       cpu.pc += 2;
       cpu.delay = 3;
       cpu.z = cpu.a === 0;
@@ -30,7 +30,7 @@ export const LDA = {
     },
     [Mode.ZeroPageX](cpu: CPU) {
       const args = cpu.args(1);
-      cpu.a = cpu.memory.read(args[0] + cpu.x);
+      cpu.a = cpu.memory.read(args[0] + cpu.x, true);
       cpu.pc += 2;
       cpu.delay = 4;
       cpu.z = cpu.a === 0;
@@ -38,7 +38,7 @@ export const LDA = {
     },
     [Mode.ZeroPageY](cpu: CPU) {
       const args = cpu.args(1);
-      cpu.a = cpu.memory.read(args[0] + cpu.y);
+      cpu.a = cpu.memory.read(args[0] + cpu.y, true);
       cpu.pc += 2;
       cpu.delay = 4;
       cpu.z = cpu.a === 0;
@@ -72,6 +72,18 @@ export const LDA = {
       cpu.z = cpu.a === 0;
       cpu.n = (cpu.a & 0x80) !== 0;
     },
+    [Mode.IndexedIndirect](cpu: CPU) {
+      const args = cpu.args(1);
+      const addr = cpu.memory.read16(args[0] + cpu.x, true);
+
+      console.log("LDA IDXIND", addr.toString(16));
+
+      cpu.a = cpu.memory.read(addr);
+      cpu.pc += 2;
+      cpu.delay = 5;
+      cpu.z = cpu.a === 0;
+      cpu.n = (cpu.a & 0x80) !== 0;
+    },
   },
 };
 
@@ -86,6 +98,22 @@ export const LDX = {
       cpu.z = cpu.x === 0;
       cpu.n = (cpu.x & 0x80) !== 0;
     },
+    [Mode.ZeroPage](cpu: CPU) {
+      const args = cpu.args(1);
+      cpu.x = cpu.memory.read(args[0], true);
+      cpu.pc += 2;
+      cpu.delay = 3;
+      cpu.z = cpu.x === 0;
+      cpu.n = (cpu.x & 0x80) !== 0;
+    },
+    [Mode.ZeroPageY](cpu: CPU) {
+      const args = cpu.args(1);
+      cpu.x = cpu.memory.read(args[0] + cpu.y, true);
+      cpu.pc += 2;
+      cpu.delay = 4;
+      cpu.z = cpu.x === 0;
+      cpu.n = (cpu.x & 0x80) !== 0;
+    },
     [Mode.Absolute](cpu: CPU) {
       const args = cpu.args(2);
       cpu.x = cpu.memory.read(to16bit(args[0], args[1]));
@@ -94,11 +122,11 @@ export const LDX = {
       cpu.z = cpu.x === 0;
       cpu.n = (cpu.x & 0x80) !== 0;
     },
-    [Mode.ZeroPage](cpu: CPU) {
-      const args = cpu.args(1);
-      cpu.x = cpu.memory.read(args[0]);
-      cpu.pc += 2;
-      cpu.delay = 3;
+    [Mode.AbsoluteY](cpu: CPU) {
+      const args = cpu.args(2);
+      cpu.x = cpu.memory.read(to16bit(args[0], args[1]) + cpu.y);
+      cpu.pc += 3;
+      cpu.delay = 4;
       cpu.z = cpu.x === 0;
       cpu.n = (cpu.x & 0x80) !== 0;
     },
@@ -116,6 +144,22 @@ export const LDY = {
       cpu.z = cpu.y === 0;
       cpu.n = (cpu.y & 0x80) !== 0;
     },
+    [Mode.ZeroPage](cpu: CPU) {
+      const args = cpu.args(1);
+      cpu.y = cpu.memory.read(args[0], true);
+      cpu.pc += 2;
+      cpu.delay = 3;
+      cpu.z = cpu.y === 0;
+      cpu.n = (cpu.y & 0x80) !== 0;
+    },
+    [Mode.ZeroPageX](cpu: CPU) {
+      const args = cpu.args(1);
+      cpu.y = cpu.memory.read(args[0] + cpu.x, true);
+      cpu.pc += 2;
+      cpu.delay = 4;
+      cpu.z = cpu.y === 0;
+      cpu.n = (cpu.y & 0x80) !== 0;
+    },
     [Mode.Absolute](cpu: CPU) {
       const args = cpu.args(2);
       cpu.y = cpu.memory.read(to16bit(args[0], args[1]));
@@ -124,11 +168,11 @@ export const LDY = {
       cpu.z = cpu.y === 0;
       cpu.n = (cpu.y & 0x80) !== 0;
     },
-    [Mode.ZeroPage](cpu: CPU) {
-      const args = cpu.args(1);
-      cpu.y = cpu.memory.read(args[0]);
-      cpu.pc += 2;
-      cpu.delay = 3;
+    [Mode.AbsoluteX](cpu: CPU) {
+      const args = cpu.args(2);
+      cpu.y = cpu.memory.read(to16bit(args[0], args[1]) + cpu.x);
+      cpu.pc += 3;
+      cpu.delay = 4;
       cpu.z = cpu.y === 0;
       cpu.n = (cpu.y & 0x80) !== 0;
     },

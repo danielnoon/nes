@@ -37,7 +37,7 @@ export default class EventBus {
     callbacks?.splice(index, 1);
   }
 
-  send(event: string, data: any): void {
+  send(event: string, data?: any): void {
     this.messageable.postMessage({ event, data });
     this.eventMap.get(event)?.forEach((callback) => callback(data));
   }

@@ -1,4 +1,4 @@
-import { Flag } from "./flag";
+import { Register } from "./Register";
 import Manager from "./manager";
 import { parse } from "./parse";
 import "./style.css";
@@ -15,7 +15,13 @@ const brkInput = document.querySelector<HTMLButtonElement>("#brkInput")!;
 const brkSubmit = document.querySelector<HTMLButtonElement>("#brkSubmit")!;
 const screen = document.querySelector<HTMLCanvasElement>("#screen")!;
 
+let currentManager: Manager | null = null;
+
 romPicker.addEventListener("change", async () => {
+  if (currentManager) {
+    currentManager.dispose();
+  }
+
   const romData = parse(await romPicker.files![0].arrayBuffer());
 
   if (!romData || !isOk(romData)) {
@@ -45,7 +51,36 @@ romPicker.addEventListener("change", async () => {
     manager.continue();
   });
 
-  manager.start(romData.unwrap());
-});
+  const keymap: Record<string, string> = {
+    ArrowUp: "up",
+    ArrowDown: "down",
+    ArrowLeft: "left",
+    ArrowRight: "right",
+    KeyA: "start",
+    KeyS: "select",
+    KeyZ: "a",
+    KeyX: "b",
+  };
 
-console.log(Flag);
+  window.addEventListener("keydown", (e) => {
+    const key = keymap[e.code];
+
+    if (key) {
+      e.preventDefault();
+      manager.setController1(key, 1);
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    const key = keymap[e.code];
+
+    if (key) {
+      e.preventDefault();
+      manager.setController1(key, 0);
+    }
+  });
+
+  manager.start(romData.unwrap());
+
+  currentManager = manager;
+});

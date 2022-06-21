@@ -9,6 +9,8 @@ export const OAM_BASE = 0x4000;
 export const OAM_SIZE = 0x00ff;
 export const SECONDARY_OAM_BASE = 0x4100;
 export const SECONDARY_OAM_SIZE = 0x0020;
+export const JOYPAD1 = 0x4016;
+export const JOYPAD2 = 0x4017;
 
 export const MASK = {
   n: 0b10000000,
