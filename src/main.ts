@@ -1,4 +1,3 @@
-import { Register } from "./Register";
 import Manager from "./manager";
 import { parse } from "./parse";
 import "./style.css";

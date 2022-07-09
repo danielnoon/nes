@@ -188,7 +188,11 @@ export default class PPU {
     if (addr >= 0x3f20 && addr < 0x3fff) {
       addr = 0x3f00 + (addr & 0x1f);
     }
-    Atomics.store(this.memory, addr, value);
+    try {
+      Atomics.store(this.memory, addr, value);
+    } catch {
+      console.warn(`Failed to write to memory at ${addr.toString(16)}`);
+    }
   }
 
   // #region Data Bus
@@ -385,7 +389,8 @@ export default class PPU {
   }
 
   cycle() {
-    // TODO: implement one cycle of the PPU
+    let bgColor = 0;
+    let spriteColor = 0;
 
     if (this.scanline >= -1 && this.scanline <= 239) {
       if (this.scanline === -1 && this.lineCycle === 1) {
@@ -403,13 +408,9 @@ export default class PPU {
       if (this.scanline >= 0 && this.lineCycle >= 1 && this.lineCycle <= 256) {
         const [pixel, palette] = this.shifters.current(this.fineX);
 
-        try {
-          Atomics.store(
-            this.framebuffer,
-            this.dot,
-            this.getColor(palette, pixel)
-          );
-        } catch (e) {}
+        if (this._showBackground) {
+          bgColor = this.getColor(palette, pixel);
+        }
 
         this.dot += 1;
       }
@@ -434,6 +435,10 @@ export default class PPU {
       //   let nOAMEntry = 0;
       //   while (nOAMEntry < 64 && this.spriteCount < 9) {}
       // }
+
+      try {
+        Atomics.store(this.framebuffer, this.dot, bgColor);
+      } catch (e) {}
 
       if (
         this.scanline === -1 &&
